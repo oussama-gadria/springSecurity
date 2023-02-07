@@ -1,7 +1,9 @@
 package com.workshop.springSecurity.config;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -26,8 +28,17 @@ import java.util.List;
 
 @EnableWebSecurity
 @RequiredArgsConstructor
+@Configuration
 public class SecurityConfig {
-    private final JwtAthFilter jwtAthFilter;
+
+    @Autowired
+    private JwtAthFilter jwtAthFilter;
+
+    @Bean
+    public JwtAthFilter jwtAthFilter() {
+        return new JwtAthFilter();
+    }
+
     private final static List<UserDetails> APPLICATION_USERS = Arrays.asList(
             new User(
                     "oussamagadria@gmail.com",
@@ -40,8 +51,9 @@ public class SecurityConfig {
                     Collections.singleton(new SimpleGrantedAuthority("ROLE_ADMIN"))
             )
     );
+
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity)throws Exception{
+    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.authorizeRequests()
                 .anyRequest()
                 .authenticated()
@@ -50,32 +62,35 @@ public class SecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authenticationProvider(authenticationProvider())
-                .addFilterBefore(jwtAthFilter, UsernamePasswordAuthenticationFilter.class);// her we said to spring to execute jwtAthFilter before UsernamePasswordAuthenticationFilter filtre
+                .addFilterBefore(jwtAthFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return httpSecurity.build();
     }
+
     @Bean
-    public AuthenticationProvider authenticationProvider (){
-        final DaoAuthenticationProvider authenticationProvider=new DaoAuthenticationProvider();
+    public AuthenticationProvider authenticationProvider() {
+        final DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
         authenticationProvider.setUserDetailsService(userDetailsService());
         authenticationProvider.setPasswordEncoder(passwordEncoder());
         return authenticationProvider;
     }
+
     @Bean
-    public PasswordEncoder passwordEncoder(){
-       // return new BCryptPasswordEncoder();
+    public PasswordEncoder passwordEncoder() {
         return NoOpPasswordEncoder.getInstance(); //not crypted
     }
+
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws  Exception{
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
+
     @Bean
-    public UserDetailsService userDetailsService(){
+    public UserDetailsService userDetailsService() {
         return new UserDetailsService() {
             @Override
             public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-                return   APPLICATION_USERS
+                return APPLICATION_USERS
                         .stream()
                         .filter(u -> u.getUsername().equals(email))
                         .findFirst()

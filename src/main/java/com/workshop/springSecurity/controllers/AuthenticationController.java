@@ -20,13 +20,15 @@ public class AuthenticationController {
     private final AuthenticationManager authenticationManager;
     private UserDetailsService userDetailsService;
     private final JwtUtils jwtUtils;
-    @PostMapping("/authenticate")
-    public ResponseEntity<String> authenticate(@RequestBody AuthenticationRequest request){
- authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(),request.getPassword()))
-final UserDetails user = userDetailsService.loadUserByUsername(request.getEmail());
- if (user !=null ){
-     return  ResponseEntity.ok(jwtUtils.generateToken(user));
 
+    @PostMapping("/authenticate")
+    public ResponseEntity<String> authenticate(@RequestBody AuthenticationRequest request) {
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+        final UserDetails user = userDetailsService.loadUserByUsername(request.getEmail());
+        if (user != null) {
+            return ResponseEntity.ok(jwtUtils.generateToken(user));
+
+        }
+        return ResponseEntity.status(400).body("Some Error has occured");
     }
- return ResponseEntity.status(400).body("Some Error has occured");
 }
