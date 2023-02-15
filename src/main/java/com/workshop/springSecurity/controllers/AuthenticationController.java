@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AuthenticationController {
     private final AuthenticationManager authenticationManager;
-    private UserDao userDao;
+    private final UserDao userDao;
     private final JwtUtils jwtUtils;
 
     @PostMapping("/authenticate")
