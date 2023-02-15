@@ -1,5 +1,6 @@
 package com.workshop.springSecurity.config;
 
+import com.workshop.springSecurity.dao.UserDao;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,7 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 public class JwtAthFilter extends OncePerRequestFilter {
-    private UserDetailsService userDetailsService;
+    private UserDao userDao;
     private JwtUtils jwtUtils;
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -28,7 +29,7 @@ public class JwtAthFilter extends OncePerRequestFilter {
         jwtToken = authHeader.substring(7);
         userEmail =jwtUtils.extractUsername(jwtToken);
         if ((userEmail != null) && (SecurityContextHolder.getContext().getAuthentication() == null)) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
+            UserDetails userDetails = userDao.findUserByEmail(userEmail);
 
             if (jwtUtils.validateToken(jwtToken,userDetails)) {
                 UsernamePasswordAuthenticationToken authenticationToken =

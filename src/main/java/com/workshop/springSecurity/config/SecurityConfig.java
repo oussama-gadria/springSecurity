@@ -1,5 +1,6 @@
 package com.workshop.springSecurity.config;
 
+import com.workshop.springSecurity.dao.UserDao;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -33,24 +34,13 @@ public class SecurityConfig {
 
     @Autowired
     private JwtAthFilter jwtAthFilter;
+    private UserDao userDao;
 
     @Bean
     public JwtAthFilter jwtAthFilter() {
         return new JwtAthFilter();
     }
 
-    private final static List<UserDetails> APPLICATION_USERS = Arrays.asList(
-            new User(
-                    "oussamagadria@gmail.com",
-                    "password",
-                    Collections.singleton(new SimpleGrantedAuthority("ROLE_USER"))
-            ),
-            new User(
-                    "gadriaoussama@gmail.com",
-                    "password",
-                    Collections.singleton(new SimpleGrantedAuthority("ROLE_ADMIN"))
-            )
-    );
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
@@ -90,11 +80,7 @@ public class SecurityConfig {
         return new UserDetailsService() {
             @Override
             public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-                return APPLICATION_USERS
-                        .stream()
-                        .filter(u -> u.getUsername().equals(email))
-                        .findFirst()
-                        .orElseThrow(() -> new UsernameNotFoundException("No User Was Found"));
+                return userDao.findUserByEmail(email);
             }
         };
     }
